@@ -139,10 +139,4 @@ public class RecebeObserver extends ModeloConexao{
         	notifyObservers(mensagem);
         }
 	}
-	
-	public static void main(String[] args) {
-		
-		RecebeObserver recerbe = new RecebeObserver(new ModeloConexao("192.168.1.3", 5000));
-		
-	}
 }
