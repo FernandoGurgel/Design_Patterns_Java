@@ -22,10 +22,11 @@ import javax.swing.JTextArea;
 
 public class RecebeObserver extends ModeloConexao{
 
-	JanelaRecebe janela = new JanelaRecebe();
+	JanelaRecebe janela;
 	
 	public RecebeObserver(ModeloConexao conexao){		
 		super(conexao.getIp(),conexao.getPorta());
+		janela = new JanelaRecebe();
 		janela.escreveTela("Observer Conectado "+getIp()+":"+getPorta());
 		new Thread(new Recebe(this)).start();
 	}
@@ -138,5 +139,10 @@ public class RecebeObserver extends ModeloConexao{
         	setChanged();
         	notifyObservers(mensagem);
         }
+	}
+	
+	public static void main(String[] args) {
+		RecebeObserver observer = new RecebeObserver(new ModeloConexao("10.100.38.224", 5000));
+		
 	}
 }

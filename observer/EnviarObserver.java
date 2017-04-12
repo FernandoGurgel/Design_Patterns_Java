@@ -106,6 +106,6 @@ public class EnviarObserver extends Observable {
 	}
 	
 	public static void main(String[] args) {
-		EnviarObserver enviar = new EnviarObserver(new ModeloConexao("192.168.1.3", 5000));
+		EnviarObserver enviar = new EnviarObserver(new ModeloConexao("10.100.38.224", 5000));
 	}
 }
