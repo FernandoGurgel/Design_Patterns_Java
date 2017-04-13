@@ -13,7 +13,7 @@ import java.util.Observer;
  */
 
 
-public class ModeloConexao implements Observer {
+public class ModeloConexao {
 	
 	private String ip;
 	private int porta;
@@ -43,8 +43,5 @@ public class ModeloConexao implements Observer {
 		this.mensagem = mensagem;
 	}
 	
-	@Override
-	public void update(Observable o, Object arg) {
-		//this.mensagem = arg.toString();
-	}
+	
 }
