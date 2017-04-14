@@ -122,19 +122,7 @@ public class RecebeObserver extends ModeloConexao{
                 }
             }
         }
-        
-        public String getHora() {
-
-        	String sb;
-        	GregorianCalendar d = new GregorianCalendar();
-
-        	sb = String.valueOf(d.get( GregorianCalendar.HOUR_OF_DAY))+":";
-        	sb += String.valueOf( d.get( GregorianCalendar.MINUTE ) )+":";
-        	sb += String.valueOf( d.get( GregorianCalendar.SECOND ) );
-
-        	return sb.toString();
-        }
-        
+               
         public void notifica(String mensagem){
         	setChanged();
         	notifyObservers(mensagem);
