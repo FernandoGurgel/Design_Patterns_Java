@@ -3,6 +3,7 @@ package observer;
 import java.awt.GridLayout;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.GregorianCalendar;
 import java.util.Observable;
@@ -13,6 +14,7 @@ import javax.swing.JTextArea;
 
 public class Enviar implements Observer{
 	
+	private Thread receber;
 	private TelaReceber tela;
 	private ModeloConexao conexao;
 	
@@ -20,6 +22,7 @@ public class Enviar implements Observer{
 		this.conexao = conexao;
 		tela = new TelaReceber();
 		enviarSolicitacao(conexao);
+		receber = new Thread(new ReceberNotificacao(this,false, conexao));
 	}
 	
 	@Override
@@ -30,11 +33,27 @@ public class Enviar implements Observer{
 	
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Conectando.....");
-		new Thread(new ReceberNotificacao(this,true,conexao));
+		enviandoSolicitacao(conexao,"entrar");
+		receber.start();
+		//new Thread(new ReceberNotificacao(this,true,conexao));
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
-		new Thread(new ReceberNotificacao(this,false, conexao));		
+		enviandoSolicitacao(conexao, "sair");
+		receber.interrupt();
+	}
+	
+	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
+		try{
+			byte[] mensagem = msg.getBytes();
+			DatagramSocket observadoSocket = new DatagramSocket();
+			InetAddress endereco = InetAddress.getByName(conexao.getIp());
+			DatagramPacket pacote = new DatagramPacket(mensagem, mensagem.length, endereco, conexao.getPorta());
+			observadoSocket.send(pacote);
+			observadoSocket.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private class ReceberNotificacao extends Observable implements Runnable{
@@ -42,18 +61,18 @@ public class Enviar implements Observer{
 		byte[] dadosReceber = new byte[255];
         boolean erro = false;
         DatagramSocket socket = null;
-		private Enviar enviar;
 		private ModeloConexao conexao;
 		
-		public ReceberNotificacao(Enviar enviar, boolean op, ModeloConexao conexao) {
-			this.enviar = enviar;
-			
+		public ReceberNotificacao(Enviar enviar, boolean op, ModeloConexao conexao) {	
 			if (op){
 				addObserver(enviar);
 			}else if (op){
-				deleteObserver(enviar);
+				deleteObservers();
+								
 			}
 		}
+
+		
 
 		@Override
 		public void run() {
@@ -108,6 +127,7 @@ public class Enviar implements Observer{
 	
 	private class TelaReceber extends JFrame{
 		
+		private static final long serialVersionUID = 1L;
 		private JTextArea areaText;
 		
 		public TelaReceber() {
