@@ -22,7 +22,6 @@ public class Enviar implements Observer{
 		this.conexao = conexao;
 		tela = new TelaReceber();
 		enviarSolicitacao(conexao);
-		receber = new Thread(new ReceberNotificacao(this,false, conexao));
 	}
 	
 	@Override
@@ -34,13 +33,12 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Conectando.....");
 		enviandoSolicitacao(conexao,"entrar");
-		receber.start();
-		//new Thread(new ReceberNotificacao(this,true,conexao));
+		new Thread(new ReceberNotificacao(this,true,conexao));
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
 		enviandoSolicitacao(conexao, "sair");
-		receber.interrupt();
+		new Thread(new ReceberNotificacao(this,false,conexao));		
 	}
 	
 	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
@@ -67,8 +65,8 @@ public class Enviar implements Observer{
 			if (op){
 				addObserver(enviar);
 			}else if (op){
-				deleteObservers();
-								
+				deleteObservers();	
+				Thread.interrupted();
 			}
 		}
 
@@ -162,4 +160,8 @@ public class Enviar implements Observer{
 		}
 	}
 	
+
+	public static void main(String[] args) {
+		Enviar enviar = new Enviar(new ModeloConexao("192.168.1.3", 5000));
+	}
 }
