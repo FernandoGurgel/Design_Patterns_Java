@@ -31,14 +31,12 @@ public class Enviar implements Observer{
 	}
 	
 	public void enviarSolicitacao(ModeloConexao conexao){
-		tela.apresentaMensagem("Conectando.....");
+		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
-		new Thread(new ReceberNotificacao(this,true,conexao));
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
 		enviandoSolicitacao(conexao, "sair");
-		new Thread(new ReceberNotificacao(this,false,conexao));		
 	}
 	
 	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
@@ -54,14 +52,14 @@ public class Enviar implements Observer{
 		}
 	}
 	
-	private class ReceberNotificacao extends Observable implements Runnable{
+	private class ReceberMensagem extends Observable implements Runnable{
 		
 		byte[] dadosReceber = new byte[255];
         boolean erro = false;
         DatagramSocket socket = null;
-		private ModeloConexao conexao;
 		
-		public ReceberNotificacao(Enviar enviar, boolean op, ModeloConexao conexao) {	
+		
+		public ReceberMensagem(Enviar enviar, boolean op) {	
 			if (op){
 				addObserver(enviar);
 			}else if (op){
@@ -162,6 +160,8 @@ public class Enviar implements Observer{
 	
 
 	public static void main(String[] args) {
-		Enviar enviar = new Enviar(new ModeloConexao("192.168.1.3", 5000));
+		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
+		Enviar enviar = new Enviar(conexao);
+		enviar.cancelarNotificacao(conexao);
 	}
 }
