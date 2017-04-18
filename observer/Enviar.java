@@ -21,6 +21,8 @@ public class Enviar implements Observer{
 	public Enviar(ModeloConexao conexao) {
 		this.conexao = conexao;
 		tela = new TelaReceber();
+		receber = new Thread(new ReceberMensagem(this, true));
+		receber.start();
 		enviarSolicitacao(conexao);
 	}
 	
@@ -33,8 +35,6 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
-		receber = new Thread(new ReceberMensagem(this, true));
-		receber.start();
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
@@ -97,7 +97,7 @@ public class Enviar implements Observer{
                             }
                         }
                         String hora = getHora();
-                        String mensagem ="\tMensagem ("+hora+"): "+s;
+                        String mensagem ="Mensagem ("+hora+"): "+s;
                         setChanged();
                         notifyObservers(mensagem);                   
                     } catch (Exception e) {

@@ -52,12 +52,14 @@ public class Receber extends Observable {
         	addObserver(observador);
         	listaObsevadores.add(observador);
         	monitor.escreveLista(mensagem);
+        	geraNotificacao("Inscrição Aprovada! Ip -> "+ip);
         }else if (s.equals("sair")){
         	for (Observador ob : listaObsevadores){
         		if (ob.getIp().equals(ip)){
         			listaObsevadores.remove(ob);
         			deleteObserver(ob);
         			monitor.escreveLista(mensagem);
+        			geraNotificacao("Inscrição Removida! Ip -> "+ip);
         		}
         	}
         }else{
@@ -104,8 +106,6 @@ public class Receber extends Observable {
 		private ModeloConexao conexaoObsevador;
 		
 		public Observador(ModeloConexao conexao) {
-			System.out.println("Observador iniciador");
-			System.out.println(conexao.getIp()+"  "+conexao.getPorta());
 			this.conexaoObsevador = conexao;
 		}
 		
@@ -116,7 +116,6 @@ public class Receber extends Observable {
 		@Override
 		public void update(Observable o, Object arg) {
 			
-			System.out.println("->gerou nootifficacao");
 			this.conexaoObsevador.setMensagem(arg.toString());			
 
 			try {
@@ -126,8 +125,6 @@ public class Receber extends Observable {
 				DatagramPacket pacote = new DatagramPacket(dados, dados.length, endereco, conexaoObsevador.getPorta());
 				observadoSocket.send(pacote);
 				observadoSocket.close();
-	
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
