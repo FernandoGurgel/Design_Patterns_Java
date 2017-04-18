@@ -98,6 +98,7 @@ public class Enviar implements Observer{
                         }
                         String hora = getHora();
                         String mensagem ="\tMensagem ("+hora+"): "+s;
+                        setChanged();
                         notifyObservers(mensagem);                   
                     } catch (Exception e) {
                         System.out.println("erro");
@@ -163,7 +164,6 @@ public class Enviar implements Observer{
 		}
 	}
 	
-
 	public static void main(String[] args) {
 		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
 		Enviar enviar = new Enviar(conexao);
