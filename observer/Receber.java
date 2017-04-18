@@ -28,13 +28,41 @@ public class Receber extends Observable {
 	private ModeloConexao conexao;
 	private ArrayList<Observador> listaObsevadores;
 	private JanelaMonitor monitor;
+	private Thread recebe;
 	
 	public Receber(ModeloConexao conexao) {
 		this.conexao = conexao;
 		listaObsevadores = new ArrayList<Observador>();
 		monitor = new JanelaMonitor();
+		recebe = new Thread(new ReceberSolicitacoes());
+		recebe.start();		
 		JanelaEnvio janelaEnvio = new JanelaEnvio(this);
-		new Thread(new ReceberSolicitacoes()).start();
+	}
+	
+	
+	public void geraNotificacao(String mensagem){
+		setChanged();
+		notifyObservers(mensagem);
+	}
+	
+	public void gerenciarDemanda(String s, String mensagem, String ip){
+		if (s.equals("entrar")){
+			System.out.println("Add observador");
+        	Observador observador = new Observador(new ModeloConexao(ip, 5000));
+        	addObserver(observador);
+        	listaObsevadores.add(observador);
+        	monitor.escreveLista(mensagem);
+        }else if (s.equals("sair")){
+        	for (Observador ob : listaObsevadores){
+        		if (ob.getIp().equals(ip)){
+        			listaObsevadores.remove(ob);
+        			deleteObserver(ob);
+        			monitor.escreveLista(mensagem);
+        		}
+        	}
+        }else{
+        	monitor.escreveLista(mensagem);
+        }
 	}
 
 	public class JanelaMonitor {
@@ -76,6 +104,7 @@ public class Receber extends Observable {
 		private ModeloConexao conexaoObsevador;
 		
 		public Observador(ModeloConexao conexao) {
+			System.out.println("Observador iniciador");
 			System.out.println(conexao.getIp()+"  "+conexao.getPorta());
 			this.conexaoObsevador = conexao;
 		}
@@ -86,6 +115,8 @@ public class Receber extends Observable {
 
 		@Override
 		public void update(Observable o, Object arg) {
+			
+			System.out.println("->gerou nootifficacao");
 			this.conexaoObsevador.setMensagem(arg.toString());			
 
 			try {
@@ -100,9 +131,7 @@ public class Receber extends Observable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 
 	public class JanelaEnvio {
@@ -121,9 +150,8 @@ public class Receber extends Observable {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					conexao.setMensagem(input.getText());
-					receber.notifyObservers(input.getText().toString());
+					geraNotificacao(conexao.getMensagem());
 					input.setText("");
-					//new Thread(new EnviarMensagem(receber.getListaObsevadores())).start(); 
 				}
 			});
 			frame.addWindowListener(new WindowAdapter() {
@@ -140,33 +168,15 @@ public class Receber extends Observable {
 
 	}
 
-	/*public class EnviarMensagem implements Runnable {
-		
-		private List<Observador> list;
-		
-		public EnviarMensagem(List<Observador> listaObsevadores) {
-			list = listaObsevadores;
-		}
-
-		@Override
-		public void run() {
-			
-			for (Observador observador : list){
-				observador = new Observador();
-			}
-		}
-		
-	}*/
-	
 	public class ReceberSolicitacoes implements Runnable{		
 		@Override
 		public void run() {
 			byte[] dadosReceber;
 			boolean erro = true;
 			try {
-				DatagramSocket socket = new DatagramSocket(conexao.getPorta());
 				while(erro){
-					dadosReceber = new byte[255];
+					DatagramSocket socket = new DatagramSocket(conexao.getPorta());
+					dadosReceber = new byte[255];  
 	                DatagramPacket pacoteRecebido = new DatagramPacket(dadosReceber, dadosReceber.length);
 	                try {
 	                    socket.receive(pacoteRecebido);
@@ -183,23 +193,8 @@ public class Receber extends Observable {
                     	}
 	                    String hora = getHora();
 	                    String mensagem ="solicitação ("+s+") -> "+hora + " ip -> "+ip;
-	                    if (s.equals("entrar")){
-	                    	Observador observador = new Observador(new ModeloConexao(ip, 5000)); 
-	                    	listaObsevadores.add(observador);
-	                    	addObserver(observador);
-	                    	monitor.escreveLista(mensagem);
-	                    }else if (s.equals("sair")){
-	                    	for (Observador ob : listaObsevadores){
-	                    		if (ob.getIp().equals(ip)){
-	                    			listaObsevadores.remove(ob);
-	                    			deleteObserver(ob);
-	                    			monitor.escreveLista(mensagem);
-	                    		}
-	                    		
-	                    	}
-	                    }else{
-	                    	monitor.escreveLista(mensagem);
-	                    }
+	                    gerenciarDemanda(s,mensagem,ip);
+	                    erro =  false;
 	                } catch (Exception e) {
 	                    System.out.println("erro");
 	                    e.printStackTrace();
@@ -209,8 +204,9 @@ public class Receber extends Observable {
 	                        System.out.println(ex.getMessage());
 	                    }
 	                    erro = false;
-	                    continue;
+	                    //continue;
 	                }
+	                socket.close();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -229,7 +225,6 @@ public class Receber extends Observable {
         	return sb.toString();
         }		
 	}
-	
 	
 	public static void main(String[] args) {
 		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);

@@ -33,10 +33,16 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
+		receber = new Thread(new ReceberMensagem(this, true));
+		receber.start();
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
 		enviandoSolicitacao(conexao, "sair");
+		receber.interrupt();
+		receber = new Thread(new ReceberMensagem(this, false));
+		receber.start();
+		receber.interrupt();
 	}
 	
 	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
@@ -57,7 +63,6 @@ public class Enviar implements Observer{
 		byte[] dadosReceber = new byte[255];
         boolean erro = false;
         DatagramSocket socket = null;
-		
 		
 		public ReceberMensagem(Enviar enviar, boolean op) {	
 			if (op){
@@ -162,6 +167,6 @@ public class Enviar implements Observer{
 	public static void main(String[] args) {
 		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
 		Enviar enviar = new Enviar(conexao);
-		enviar.cancelarNotificacao(conexao);
+		//enviar.cancelarNotificacao(conexao);
 	}
 }
