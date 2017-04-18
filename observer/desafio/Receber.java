@@ -1,4 +1,4 @@
-package observer;
+package observer.desafio;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -191,7 +191,7 @@ public class Receber extends Observable {
 	                    String hora = getHora();
 	                    String mensagem ="solicitação ("+s+") -> "+hora + " ip -> "+ip;
 	                    gerenciarDemanda(s,mensagem,ip);
-	                    erro =  false;
+	                    //erro =  false;
 	                } catch (Exception e) {
 	                    System.out.println("erro");
 	                    e.printStackTrace();
@@ -224,7 +224,7 @@ public class Receber extends Observable {
 	}
 	
 	public static void main(String[] args) {
-		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
+		ModeloConexao conexao = new ModeloConexao("10.100.38.224", 5000);
 		Receber receber = new Receber(conexao);
 	}
 }

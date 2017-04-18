@@ -1,4 +1,4 @@
-package observer;
+package observer.desafio;
 
 import java.awt.GridLayout;
 import java.net.DatagramPacket;
@@ -14,6 +14,7 @@ import javax.swing.JTextArea;
 
 public class Enviar implements Observer{
 	
+	private boolean vida = false;	
 	private Thread receber;
 	private TelaReceber tela;
 	private ModeloConexao conexao;
@@ -21,8 +22,7 @@ public class Enviar implements Observer{
 	public Enviar(ModeloConexao conexao) {
 		this.conexao = conexao;
 		tela = new TelaReceber();
-		receber = new Thread(new ReceberMensagem(this, true));
-		receber.start();
+		
 		enviarSolicitacao(conexao);
 	}
 	
@@ -35,14 +35,16 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
+		receber = new Thread(new ReceberMensagem(this, true));
+		vida = true;
+		receber.start();
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
-		enviandoSolicitacao(conexao, "sair");
-		receber.interrupt();
+		vida = false;
 		receber = new Thread(new ReceberMensagem(this, false));
 		receber.start();
-		receber.interrupt();
+		enviandoSolicitacao(conexao, "sair");
 	}
 	
 	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
@@ -68,8 +70,7 @@ public class Enviar implements Observer{
 			if (op){
 				addObserver(enviar);
 			}else if (op){
-				deleteObservers();	
-				Thread.interrupted();
+				deleteObserver(enviar);
 			}
 		}
 
@@ -77,14 +78,14 @@ public class Enviar implements Observer{
 
 		@Override
 		public void run() {
-			while (true) {
+			while (vida) {
                 try {
                     socket = new DatagramSocket(conexao.getPorta());
                 } catch (SocketException ex) {
                     System.out.println(ex.getMessage());
                 }
-                erro = false;
-                while (!erro) {
+                
+                while (vida) {
                 	dadosReceber = new byte[255];
                     DatagramPacket pacoteRecebido = new DatagramPacket(dadosReceber, dadosReceber.length);
                     try {
@@ -107,8 +108,6 @@ public class Enviar implements Observer{
                         } catch (InterruptedException ex) {
                             System.out.println(ex.getMessage());
                         }
-                        erro = true;
-                        continue;
                     }
                 }
             }
@@ -165,8 +164,8 @@ public class Enviar implements Observer{
 	}
 	
 	public static void main(String[] args) {
-		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
+		ModeloConexao conexao = new ModeloConexao("10.100.32.22", 5000);
 		Enviar enviar = new Enviar(conexao);
-		//enviar.cancelarNotificacao(conexao);
+		enviar.cancelarNotificacao(conexao);
 	}
 }

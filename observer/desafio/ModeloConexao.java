@@ -1,4 +1,4 @@
-package observer;
+package observer.desafio;
 
 /**
  * Modelo de uma conexao de uma rede local 
