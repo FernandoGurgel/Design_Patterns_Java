@@ -8,11 +8,9 @@ import java.awt.event.WindowEvent;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JFrame;
@@ -25,18 +23,19 @@ import javax.swing.JTextField;
 
 public class Receber extends Observable {
 
+	private boolean vida;
 	private ModeloConexao conexao;
 	private ArrayList<Observador> listaObsevadores;
 	private JanelaMonitor monitor;
-	private Thread recebe;
+	private JanelaEnvio janelaEnvio;
 	
 	public Receber(ModeloConexao conexao) {
 		this.conexao = conexao;
 		listaObsevadores = new ArrayList<Observador>();
 		monitor = new JanelaMonitor();
-		recebe = new Thread(new ReceberSolicitacoes());
-		recebe.start();		
-		JanelaEnvio janelaEnvio = new JanelaEnvio(this);
+		vida = true;
+		new Thread(new ReceberSolicitacoes()).start();
+		janelaEnvio = new JanelaEnvio(this);
 	}
 	
 	
@@ -46,7 +45,9 @@ public class Receber extends Observable {
 	}
 	
 	public void gerenciarDemanda(String s, String mensagem, String ip){
+		System.out.println(s);
 		if (s.equals("entrar")){
+			//vida = false;
 			System.out.println("Add observador");
         	Observador observador = new Observador(new ModeloConexao(ip, 5000));
         	addObserver(observador);
@@ -119,7 +120,7 @@ public class Receber extends Observable {
 			this.conexaoObsevador.setMensagem(arg.toString());			
 
 			try {
-				byte[] dados = conexaoObsevador.getMensagem().getBytes();
+				byte[] dados = conexaoObsevador.getMensagem().getBytes("UTF-8");
 				DatagramSocket observadoSocket = new DatagramSocket();
 				InetAddress endereco = InetAddress.getByName(conexaoObsevador.getIp());
 				DatagramPacket pacote = new DatagramPacket(dados, dados.length, endereco, conexaoObsevador.getPorta());
@@ -166,45 +167,53 @@ public class Receber extends Observable {
 	}
 
 	public class ReceberSolicitacoes implements Runnable{		
+		
+		byte[] dadosReceber = new byte[255];
+        DatagramSocket socket = null;
+		
 		@Override
 		public void run() {
-			byte[] dadosReceber;
-			boolean erro = true;
+			
 			try {
-				while(erro){
-					DatagramSocket socket = new DatagramSocket(conexao.getPorta());
-					dadosReceber = new byte[255];  
-	                DatagramPacket pacoteRecebido = new DatagramPacket(dadosReceber, dadosReceber.length);
-	                try {
-	                    socket.receive(pacoteRecebido);
-	                    byte[] b = pacoteRecebido.getData();
-	                    String s = "";
-	                    for (int i = 0; i < b.length; i++) {
-	                        if (b[i] != 0) {
-	                            s += (char) b[i];
-	                        }
-	                    }
-	                    String ip = "";
-                    	for (int a = 1; a < pacoteRecebido.getAddress().toString().length();a++){
-                    		ip +=pacoteRecebido.getAddress().toString().charAt(a);
-                    	}
-	                    String hora = getHora();
-	                    String mensagem ="solicitação ("+s+") -> "+hora + " ip -> "+ip;
-	                    gerenciarDemanda(s,mensagem,ip);
-	                    //erro =  false;
-	                } catch (Exception e) {
-	                    System.out.println("erro");
-	                    e.printStackTrace();
-	                    try {
-	                        Thread.sleep(100);
-	                    } catch (InterruptedException ex) {
-	                        System.out.println(ex.getMessage());
-	                    }
-	                    erro = false;
-	                    //continue;
-	                }
-	                socket.close();
-				}
+				while (vida) {
+		                try {
+		                    socket = new DatagramSocket(conexao.getPorta());
+		                } catch (SocketException ex) {
+		                    System.out.println(ex.getMessage());
+		                }
+		                
+		                while (vida) {
+		                	dadosReceber = new byte[255];
+		                    DatagramPacket pacoteRecebido = new DatagramPacket(dadosReceber, dadosReceber.length);
+		                    try {
+		                        socket.receive(pacoteRecebido);
+		                        byte[] b = pacoteRecebido.getData();
+		                        String s = "";
+		                        for (int i = 0; i < b.length; i++) {
+		                            if (b[i] != 0) {
+		                                s += (char) b[i];
+		                            }
+		                        }
+		                        String ip = "";
+		                    	for (int a = 1; a < pacoteRecebido.getAddress().toString().length();a++){
+		                    		ip +=pacoteRecebido.getAddress().toString().charAt(a);
+		                    	}
+		                        String hora = getHora();
+		                        String mensagem ="solicitação ("+s+") -> "+hora + " ip -> "+ip;
+		                        gerenciarDemanda(s, mensagem, ip);                   
+		                    } catch (Exception e) {
+		                        System.out.println("erro");
+		                        e.printStackTrace();
+		                        try {
+		                            Thread.sleep(100);
+		                        } catch (InterruptedException ex) {
+		                            System.out.println(ex.getMessage());
+		                            ex.printStackTrace();
+		                            vida = false;
+		                        }
+		                    }
+		                }
+				}   
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -224,7 +233,7 @@ public class Receber extends Observable {
 	}
 	
 	public static void main(String[] args) {
-		ModeloConexao conexao = new ModeloConexao("10.100.38.224", 5000);
+		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
 		Receber receber = new Receber(conexao);
 	}
 }

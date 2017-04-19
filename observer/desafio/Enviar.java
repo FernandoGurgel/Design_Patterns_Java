@@ -15,14 +15,12 @@ import javax.swing.JTextArea;
 public class Enviar implements Observer{
 	
 	private boolean vida = false;	
-	private Thread receber;
 	private TelaReceber tela;
 	private ModeloConexao conexao;
 	
 	public Enviar(ModeloConexao conexao) {
 		this.conexao = conexao;
 		tela = new TelaReceber();
-		
 		enviarSolicitacao(conexao);
 	}
 	
@@ -35,16 +33,15 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
-		receber = new Thread(new ReceberMensagem(this, true));
-		vida = true;
-		receber.start();
+		//new Thread(new ReceberMensagem(this, true)).start();
+		tela.apresentaMensagem("Começando Receber Mensagem......");
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
 		vida = false;
-		receber = new Thread(new ReceberMensagem(this, false));
-		receber.start();
+		//new Thread(new ReceberMensagem(this, false)).start();;
 		enviandoSolicitacao(conexao, "sair");
+		tela.apresentaMensagem("Conexão encerrada......");		
 	}
 	
 	private void enviandoSolicitacao(ModeloConexao conexao,String msg) {
@@ -63,18 +60,17 @@ public class Enviar implements Observer{
 	private class ReceberMensagem extends Observable implements Runnable{
 		
 		byte[] dadosReceber = new byte[255];
-        boolean erro = false;
         DatagramSocket socket = null;
 		
 		public ReceberMensagem(Enviar enviar, boolean op) {	
 			if (op){
 				addObserver(enviar);
+				vida = op;
 			}else if (op){
 				deleteObserver(enviar);
+				vida = op;
 			}
 		}
-
-		
 
 		@Override
 		public void run() {
@@ -164,7 +160,7 @@ public class Enviar implements Observer{
 	}
 	
 	public static void main(String[] args) {
-		ModeloConexao conexao = new ModeloConexao("10.100.32.22", 5000);
+		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
 		Enviar enviar = new Enviar(conexao);
 		enviar.cancelarNotificacao(conexao);
 	}
