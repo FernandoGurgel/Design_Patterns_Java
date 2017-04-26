@@ -7,14 +7,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -30,14 +33,27 @@ public class Receber extends Observable {
 	private JanelaEnvio janelaEnvio;
 	
 	public Receber(ModeloConexao conexao) {
-		this.conexao = conexao;
-		listaObsevadores = new ArrayList<Observador>();
-		monitor = new JanelaMonitor();
-		vida = true;
-		new Thread(new ReceberSolicitacoes()).start();
-		janelaEnvio = new JanelaEnvio(this);
+		try {
+			boolean erro = false;
+			do{
+				if (!InetAddress.getByAddress(null).getHostAddress().equals(conexao.getIp())){
+					
+					this.conexao = conexao;
+					listaObsevadores = new ArrayList<Observador>();
+					monitor = new JanelaMonitor();
+					vida = true;
+					new Thread(new ReceberSolicitacoes()).start();
+					janelaEnvio = new JanelaEnvio(this);
+				}else{
+					conexao.setIp(JOptionPane.showInputDialog("Informe novamente Ip!"));
+					erro = true;
+					
+				}
+			}while(erro);
+		} catch (UnknownHostException e) {	
+			e.printStackTrace();
+		}
 	}
-	
 	
 	public void geraNotificacao(String mensagem){
 		setChanged();

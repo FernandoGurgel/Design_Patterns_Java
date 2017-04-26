@@ -33,13 +33,13 @@ public class Enviar implements Observer{
 	public void enviarSolicitacao(ModeloConexao conexao){
 		tela.apresentaMensagem("Solicitação enviada.....");
 		enviandoSolicitacao(conexao,"entrar");
-		//new Thread(new ReceberMensagem(this, true)).start();
+		new Thread(new ReceberMensagem(this, true)).start();
 		tela.apresentaMensagem("Começando Receber Mensagem......");
 	}
 	
 	public void cancelarNotificacao(ModeloConexao conexao){
 		vida = false;
-		//new Thread(new ReceberMensagem(this, false)).start();;
+		new Thread(new ReceberMensagem(this, false)).start();;
 		enviandoSolicitacao(conexao, "sair");
 		tela.apresentaMensagem("Conexão encerrada......");		
 	}
@@ -160,8 +160,8 @@ public class Enviar implements Observer{
 	}
 	
 	public static void main(String[] args) {
-		ModeloConexao conexao = new ModeloConexao("192.168.1.3", 5000);
+		ModeloConexao conexao = new ModeloConexao("10.100.32.50", 5000);
 		Enviar enviar = new Enviar(conexao);
-		enviar.cancelarNotificacao(conexao);
+		//enviar.cancelarNotificacao(conexao);
 	}
 }
