@@ -13,6 +13,7 @@ public class TesteIterator {
 
 	
 	private PercorrerCollection collection;
+	private Iterator<Pessoa> iterator;
 	
 	public TesteIterator() {
 		collection = new PercorrerCollection();
@@ -28,7 +29,7 @@ public class TesteIterator {
 	}
 	
 	public void lista(){
-		Iterator<Pessoa> iterator = collection.iniciarIterator();
+		this.iterator = collection.iniciarIterator();
 		
 		while(iterator.hasNext()){
 			System.out.println(iterator.next().getNome());
@@ -37,10 +38,19 @@ public class TesteIterator {
 	
 	public void listaOrdenada(){
 		
-		collection.ordenarLista();
+		this.collection.ordenarLista();
 		
 		System.out.println("\n\n------------------ Lista Ordenanda ---------------\n\n");
 		Iterator<Pessoa> iterator = collection.iniciarIterator();
+		
+		while(iterator.hasNext()){
+			System.out.println(iterator.next().getNome());
+		}
+	}
+	
+	public void listaInversa(){
+		System.out.println("_____ lista inversa _______");
+		this.iterator = collection.listaInversa();
 		
 		while(iterator.hasNext()){
 			System.out.println(iterator.next().getNome());
@@ -64,7 +74,9 @@ public class TesteIterator {
 		
 		collection.ordenarLista();
 		
-		iterator = collection.iniciarIterator();
+		
+		System.out.println("_____ lista inversa _______");
+		iterator = collection.listaInversa();
 		
 		while(iterator.hasNext()){
 			System.out.println(iterator.next().getNome());

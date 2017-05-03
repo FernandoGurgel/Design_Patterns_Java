@@ -16,6 +16,7 @@ import java.util.List;
 public class PercorrerCollection implements IContainer<Pessoa>{
 
 	private List<Pessoa> lista;
+	private boolean inversa;
 	
 	public PercorrerCollection() {
 		this.lista = new ArrayList<>();
@@ -46,6 +47,7 @@ public class PercorrerCollection implements IContainer<Pessoa>{
 	
 	@Override
 	public void ordenarLista() {
+		
 		Collections.sort(lista,new Comparator<Pessoa>() {
 
 			@Override
@@ -55,14 +57,29 @@ public class PercorrerCollection implements IContainer<Pessoa>{
 		});
 	}
 	
+	@Override
+	public Iterator<Pessoa> listaInversa() {
+		inversa = true;
+		return new PercorrerIterator(inversa);
+	}
 	
 	public class PercorrerIterator implements Iterator<Pessoa>{
-
+		
 		private int index;
 		
+		public PercorrerIterator() {}
+		
+		public PercorrerIterator(boolean inversa) {
+			if(inversa){
+				index = lista.size();
+			}
+		}
+
 		@Override
 		public boolean hasNext() {
-			if (index < lista.size()){
+			if (inversa && index > 0){
+				return true;
+			}if (index < lista.size() && !inversa){
 				return true;
 			}else{
 				return false;
@@ -71,12 +88,18 @@ public class PercorrerCollection implements IContainer<Pessoa>{
 
 		@Override
 		public Pessoa next() {
-			if (this.hasNext()){
+			if(inversa && this.hasNext()){
+				index --;
+				return lista.get(index);
+			}
+			if (this.hasNext() && !inversa){
 				return lista.get(index++);
 			}else{
 				return null;
 			}
 		}
+		
+		
 		
 	}
 }
