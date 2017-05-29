@@ -58,6 +58,17 @@ public class PercorrerCollection implements IContainer<Pessoa>{
 	}
 	
 	@Override
+	public void listaInicial() {
+		PercorrerCollection collection = new PercorrerCollection();
+		
+		Iterator<Pessoa> iterator = collection.iniciarIterator();
+		
+		while(iterator.hasNext()){
+			System.out.println(iterator.next().getNome());
+		}
+	}
+	
+	@Override
 	public Iterator<Pessoa> listaInversa() {
 		inversa = true;
 		return new PercorrerIterator(inversa);

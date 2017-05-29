@@ -14,6 +14,7 @@ public interface IContainer<E> {
 	public Iterator<E> iniciarIterator();
 	public String add(Pessoa pessoa);
 	public String remove(Pessoa pessoa);
+	public void listaInicial();
 	public void ordenarLista();
 	public Iterator<Pessoa> listaInversa();
 	
